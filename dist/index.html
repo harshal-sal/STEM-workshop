@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Chronoscope - Volumetric 3D Basilica of Bom Jesus, Goa</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <!-- A-Frame pinned via CDN (stable 1.5.0) -->
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/aframe-orbit-controls@1.3.2/dist/aframe-orbit-controls.min.js"></script>
+
+    <!-- Project source files -->
+
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Outfit', sans-serif;
+            background-color: #030712;
+            color: #f9fafb;
+            user-select: none;
+        }
+
+        /* Glassmorphic Header UI */
+        #app-header {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            z-index: 100;
+        }
+
+        .brand-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-icon {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, #38bdf8, #818cf8);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 20px;
+            box-shadow: 0 4px 14px rgba(56, 189, 248, 0.4);
+        }
+
+        .brand-text h1 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 700;
+            background: linear-gradient(90deg, #f3f4f6, #9ca3af);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand-text p {
+            margin: 2px 0 0 0;
+            font-size: 12px;
+            color: #38bdf8;
+            font-weight: 500;
+        }
+
+        .btn-ar {
+            background: linear-gradient(135deg, #0284c7, #2563eb);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(37, 99, 235, 0.4);
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-ar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.6);
+        }
+
+        /* Floating Time Scrubbing Controller */
+        #control-panel {
+            position: absolute;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 40px);
+            max-width: 580px;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            padding: 20px 28px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            z-index: 100;
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .slider-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .year-display {
+            font-size: 20px;
+            font-weight: 700;
+            color: #38bdf8;
+            text-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+        }
+
+        .timeline-slider {
+            width: 100%;
+            -webkit-appearance: none;
+            height: 8px;
+            border-radius: 4px;
+            background: #334155;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .timeline-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #38bdf8, #818cf8);
+            cursor: pointer;
+            box-shadow: 0 0 14px rgba(56, 189, 248, 0.8);
+            border: 2px solid #ffffff;
+        }
+
+        .timeline-ticks {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 12px;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .quick-actions {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .action-chip {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #cbd5e1;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .action-chip:hover {
+            background: rgba(56, 189, 248, 0.15);
+            border-color: #38bdf8;
+            color: #38bdf8;
+        }
+
+        /* Modal Info Dialog */
+        #info-modal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            width: 90%;
+            max-width: 420px;
+            background: #0f172a;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.8);
+            z-index: 200;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        #info-modal.active {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+            pointer-events: auto;
+        }
+
+        #info-modal h3 { margin: 0 0 8px 0; color: #f8fafc; font-size: 20px; }
+        #info-modal p { color: #94a3b8; font-size: 14px; line-height: 1.6; margin-bottom: 20px; }
+        .close-btn { width: 100%; background: #1e293b; color: #f8fafc; border: none; padding: 12px; border-radius: 12px; font-weight: 600; cursor: pointer; }
+        .close-btn:hover { background: #334155; }
+    </style>
+  <script type="module" crossorigin src="/assets/index-Dgxr2LEB.js"></script>
+</head>
+<body>
+
+    <!-- Header UI -->
+    <div id="app-header">
+        <div class="brand-title">
+            <div class="brand-icon">🏛️</div>
+            <div class="brand-text">
+                <h1>Basilica of Bom Jesus (Volumetric 3D)</h1>
+                <p>3D WebXR Architectural Reconstruction • Old Goa</p>
+            </div>
+        </div>
+        <button class="btn-ar" onclick="document.querySelector('a-scene').enterVR()">
+            Enter Meta Quest 3S AR
+        </button>
+    </div>
+
+    <!-- Time Scrub Control Panel -->
+    <div id="control-panel">
+        <div class="slider-header">
+            <span class="slider-title">3D Timeline Scrubbing</span>
+            <span class="year-display" id="ui-year">Year 1700</span>
+        </div>
+        <input type="range" min="0" max="1" step="0.001" value="0.5" class="timeline-slider" id="ui-slider">
+        <div class="timeline-ticks">
+            <span>1594 (Golden Age 3D)</span>
+            <span>1750 (Colonial)</span>
+            <span>2025 (Exposed Laterite 3D)</span>
+        </div>
+
+        <div class="quick-actions">
+            <button class="action-chip" onclick="askGuideAbout('Tell me about the 3D architecture')">💬 Ask Guide</button>
+            <button class="action-chip" onclick="showHotspotModal('Tomb of St. Francis Xavier', 'The mausoleum inside the Basilica holds the sacred mortal remains of St. Francis Xavier, housed in an intricate silver casket crafted by Italian sculptor Giovanni Battista Foggini in 1698.')">📍 St. Xavier Tomb</button>
+            <button class="action-chip" onclick="showHotspotModal('Volumetric 3D Twin Towers', 'The twin bell towers flank the main nave, constructed with local red laterite stone and white lime mortar during the Portuguese colonial era.')">🔔 Twin Towers</button>
+        </div>
+    </div>
+
+    <!-- Modal Dialog -->
+    <div id="info-modal">
+        <h3 id="modal-title">Hotspot Details</h3>
+        <p id="modal-desc">Description text...</p>
+        <button class="close-btn" onclick="hideHotspotModal()">Close</button>
+    </div>
+
+    <!-- A-Frame Scene -->
+    <a-scene 
+        webxr="optionalFeatures: hit-test, anchors, mesh-detection, plane-detection; referenceSpaceType: local-floor;"
+        renderer="colorManagement: true; physicallyCorrectLights: true; antialias: true;"
+        perf-hud
+    >
+        <a-assets>
+            <img id="img-reconstructed" src="/assets/basilica_reconstructed-BcQc3cuV.jpg">
+            <img id="img-ruin" src="/assets/basilica_ruin-DgS42iCF.jpg">
+            <img id="img-guide" src="/assets/guide_portrait-qCYU5I24.jpg">
+        </a-assets>
+
+        <!-- Lighting Setup: Warm Sunlight -->
+        <a-entity light="type: ambient; color: #FFF; intensity: 0.9"></a-entity>
+        <a-entity light="type: directional; color: #ffebc2; intensity: 1.4; castShadow: true" position="4 6 3"></a-entity>
+
+        <a-sky color="#0b1329"></a-sky>
+
+        <!-- Camera Rig with Orbit Controls for 360-degree 3D View -->
+        <a-entity id="camera-rig" position="0 0 0">
+            <a-entity id="main-camera" camera look-controls orbit-controls="target: 0 1.2 0; initialPosition: 0 2.2 4.5; enableDamping: true; dampingFactor: 0.08"></a-entity>
+            
+            <!-- XR Controllers -->
+            <a-entity id="right-controller" controller-input="hand: right"></a-entity>
+            <a-entity id="left-controller" controller-input="hand: left"></a-entity>
+            <a-entity id="right-hand" hand-input="hand: right"></a-entity>
+            <a-entity id="left-hand" hand-input="hand: left"></a-entity>
+        </a-entity>
+
+        <!-- Heritage Site Container (Volumetric 3D Architecture) -->
+        <a-entity id="site-container" site-anchor time-slider position="0 0 0">
+            
+            <!-- Floating Year Title -->
+            <a-text id="year-text" value="Year: 1700 (Colonial Era)" position="0 3.6 0" align="center" scale="0.85 0.85 0.85" color="#38bdf8"></a-text>
+
+            <!-- 1. Full 3D Volumetric Reconstructed Model (1594) -->
+            <a-entity id="reconstructed-model" basilica-builder="type: reconstructed" position="0 0 0"></a-entity>
+
+            <!-- 2. Full 3D Volumetric Modern Ruin / Laterite Model (2025) -->
+            <a-entity id="ruin-model" basilica-builder="type: ruin" position="0 0 0"></a-entity>
+
+            <!-- 3D Ground Base Platform -->
+            <a-cylinder position="0 -0.05 0" radius="3.2" height="0.1" color="#1e293b" material="roughness: 0.9" shadow="receive: true">
+                <a-ring position="0 0.051 0" rotation="-90 0 0" radius-inner="3.15" radius-outer="3.2" color="#38bdf8" material="emissive: #38bdf8; emissiveIntensity: 0.6"></a-ring>
+            </a-cylinder>
+
+            <!-- 3D Hotspot 1: St. Xavier Tomb -->
+            <a-entity position="0.8 1.4 1.4" class="hotspot clickable" onclick="showHotspotModal('Tomb of St. Francis Xavier', 'The mausoleum inside the Basilica holds the sacred mortal remains of St. Francis Xavier, housed in an intricate silver casket crafted by Florentine artist Foggini in 1698.')">
+                <a-sphere radius="0.09" color="#ec4899" material="emissive: #ec4899; emissiveIntensity: 0.6"></a-sphere>
+                <a-ring rotation="-90 0 0" radius-inner="0.11" radius-outer="0.14" color="#f472b6" material="emissive: #f472b6; emissiveIntensity: 0.8"></a-ring>
+                <a-text value="St. Xavier Tomb" position="0 0.22 0" align="center" scale="0.38 0.38 0.38" color="#f472b6"></a-text>
+            </a-entity>
+
+            <!-- 3D Hotspot 2: Twin Bell Towers -->
+            <a-entity position="-1.45 2.2 0.9" class="hotspot clickable" onclick="showHotspotModal('Volumetric 3D Twin Towers', 'The twin bell towers flank the main nave, constructed with local red laterite stone and white lime mortar during the Portuguese colonial era.')">
+                <a-sphere radius="0.09" color="#f59e0b" material="emissive: #f59e0b; emissiveIntensity: 0.6"></a-sphere>
+                <a-ring rotation="-90 0 0" radius-inner="0.11" radius-outer="0.14" color="#fbbf24" material="emissive: #fbbf24; emissiveIntensity: 0.8"></a-ring>
+                <a-text value="Twin Bell Towers" position="0 0.22 0" align="center" scale="0.38 0.38 0.38" color="#fbbf24"></a-text>
+            </a-entity>
+
+            <!-- Holographic Avatar Guide Entity (Father Domingos) -->
+            <a-entity id="avatar-guide" avatar-guide position="-2.2 0 1.2" rotation="0 35 0"></a-entity>
+
+        </a-entity>
+    </a-scene>
+
+    <script>
+        const slider = document.getElementById('ui-slider');
+        const yearDisplay = document.getElementById('ui-year');
+
+        slider.addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            window.dispatchEvent(new CustomEvent('ui-time-change', { detail: { value: val } }));
+        });
+
+        window.addEventListener('app-time-synced', (e) => {
+            slider.value = e.detail.t;
+            yearDisplay.textContent = `Year ${e.detail.year}`;
+        });
+
+        function showHotspotModal(title, desc) {
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-desc').textContent = desc;
+            document.getElementById('info-modal').classList.add('active');
+        }
+
+        function hideHotspotModal() {
+            document.getElementById('info-modal').classList.remove('active');
+        }
+
+        function askGuideAbout(query) {
+            const guideEntity = document.getElementById('avatar-guide');
+            if (guideEntity && guideEntity.components['avatar-guide']) {
+                guideEntity.components['avatar-guide'].triggerSpeechQuery(query);
+            }
+        }
+    </script>
+</body>
+</html>

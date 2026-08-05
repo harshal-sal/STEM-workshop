@@ -1,0 +1,27 @@
+{
+  "id": "goa-basilica",
+  "name": "Basilica of Bom Jesus",
+  "location": { "lat": 15.5009, "lon": 73.9116 },
+  "eraRange": { "from": 1594, "to": 2025 },
+  "keyframes": [
+    { "year": 1594, "model": "reconstructed.glb", "label": "Construction starts" },
+    { "year": 1605, "model": "reconstructed.glb", "label": "Consecration" },
+    { "year": 1950, "model": "ruin.glb", "label": "Exposed laterite exterior (modern look)" }
+  ],
+  "guide": { 
+      "model": "guide.glb", 
+      "persona": "a 17th-century Portuguese Jesuit priest and architect", 
+      "voiceId": "portuguese-accent-male" 
+  },
+  "hotspots": [
+    { 
+        "id": "h1", 
+        "position": [2.1, 1.4, -3.0], 
+        "title": "Tomb of St. Francis Xavier", 
+        "summary": "The silver casket containing the mortal remains of St. Francis Xavier, a masterpiece of Italian art.", 
+        "context": "The mausoleum was designed by the 17th-century Florentine sculptor Giovanni Battista Foggini." 
+    }
+  ],
+  "scale": { "miniature": 0.05, "lifeSize": 1.0 },
+  "attribution": "Mock Data - Archeological Survey of India (Goa Circle)"
+}
