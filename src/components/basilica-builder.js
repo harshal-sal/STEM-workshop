@@ -1,6 +1,7 @@
 /**
- * Volumetric 3D Basilica Builder Component with Realistic Image Textures
- * Maps generated high-res realistic textures onto the 3D architectural geometry.
+ * Volumetric 3D Basilica Builder Component
+ * Builds a 360-degree volumetric 3D architectural model of the Basilica of Bom Jesus
+ * complete with depth, side walls, twin bell towers, pillars, arches, and roof structures.
  */
 AFRAME.registerComponent('basilica-builder', {
     schema: {
@@ -11,14 +12,16 @@ AFRAME.registerComponent('basilica-builder', {
         const group = new THREE.Group();
         const isRuin = this.data.type === 'ruin';
 
-        // Load generated realistic texture maps
+        // Load realistic image textures
         const textureLoader = new THREE.TextureLoader();
         const texturePath = isRuin ? './assets/images/basilica_ruin.jpg' : './assets/images/basilica_reconstructed.jpg';
         const facadeTexture = textureLoader.load(texturePath);
         facadeTexture.colorSpace = THREE.SRGBColorSpace;
+        facadeTexture.wrapS = THREE.RepeatWrapping;
+        facadeTexture.wrapT = THREE.RepeatWrapping;
 
         // Base materials with texture mapping
-        const mainMat = new THREE.MeshStandardMaterial({
+        const wallMat = new THREE.MeshStandardMaterial({
             map: facadeTexture,
             roughness: isRuin ? 0.85 : 0.45,
             metalness: isRuin ? 0.05 : 0.15
@@ -39,102 +42,110 @@ AFRAME.registerComponent('basilica-builder', {
             roughness: 0.9
         });
 
-        // 1. Main Central Nave Structure (3D Volume)
-        const naveGeo = new THREE.BoxGeometry(2.6, 2.0, 2.4);
-        const nave = new THREE.Mesh(naveGeo, mainMat);
-        nave.position.set(0, 1.0, 0);
+        // 1. Central 3D Nave Building (Full 3D Volume with Depth)
+        const naveGeo = new THREE.BoxGeometry(2.8, 2.2, 3.8);
+        const nave = new THREE.Mesh(naveGeo, wallMat);
+        nave.position.set(0, 1.1, -0.8);
         nave.castShadow = true;
         nave.receiveShadow = true;
         group.add(nave);
 
-        // 2. High-Detail Front Facade Wall with Textured Map
-        const facadeWallGeo = new THREE.PlaneGeometry(2.6, 2.0);
-        const facadeWall = new THREE.Mesh(facadeWallGeo, mainMat);
-        facadeWall.position.set(0, 1.0, 1.21);
-        group.add(facadeWall);
+        // 2. Sloped 3D Roof
+        const roofShape = new THREE.Shape();
+        roofShape.moveTo(-1.45, 0);
+        roofShape.lineTo(0, 0.8);
+        roofShape.lineTo(1.45, 0);
+        roofShape.closePath();
 
-        // 3. Three-Tier Facade Pillars & Columns (Volumetric)
+        const roofExtrudeSettings = { depth: 3.8, bevelEnabled: false };
+        const roofGeo = new THREE.ExtrudeGeometry(roofShape, roofExtrudeSettings);
+        const roof = new THREE.Mesh(roofGeo, trimMat);
+        roof.position.set(0, 2.2, -2.7);
+        roof.castShadow = true;
+        group.add(roof);
+
+        // 3. Three-Tier Facade Pillars & Columns (Volumetric Front)
         const numColumns = 6;
-        const spacing = 0.44;
+        const spacing = 0.46;
         const startX = -((numColumns - 1) * spacing) / 2;
 
         for (let tier = 0; tier < 3; tier++) {
-            const tierY = 0.35 + tier * 0.6;
-            const tierHeight = 0.55;
+            const tierY = 0.38 + tier * 0.65;
+            const tierHeight = 0.6;
 
             // Horizontal Cornice Layer
-            const corniceGeo = new THREE.BoxGeometry(2.7, 0.07, 0.25);
+            const corniceGeo = new THREE.BoxGeometry(2.9, 0.08, 0.3);
             const cornice = new THREE.Mesh(corniceGeo, trimMat);
-            cornice.position.set(0, tierY + tierHeight / 2 + 0.03, 1.25);
+            cornice.position.set(0, tierY + tierHeight / 2 + 0.04, 1.12);
             group.add(cornice);
 
             // Columns across the facade
             for (let i = 0; i < numColumns; i++) {
                 if (isRuin && tier === 2 && (i === 1 || i === 4)) continue;
 
-                const colGeo = new THREE.CylinderGeometry(0.05, 0.06, tierHeight, 16);
+                const colGeo = new THREE.CylinderGeometry(0.06, 0.07, tierHeight, 16);
                 const column = new THREE.Mesh(colGeo, stoneMat);
-                column.position.set(startX + i * spacing, tierY, 1.28);
+                column.position.set(startX + i * spacing, tierY, 1.15);
                 column.castShadow = true;
                 group.add(column);
             }
         }
 
-        // 4. Arched Main Entrance Portal
-        const portalArchGeo = new THREE.CylinderGeometry(0.32, 0.32, 0.2, 16, 1, false, 0, Math.PI);
+        // 4. Arched Main Entrance Portal & Receding Corridor
+        const portalArchGeo = new THREE.CylinderGeometry(0.35, 0.35, 0.3, 16, 1, false, 0, Math.PI);
         const portalArch = new THREE.Mesh(portalArchGeo, trimMat);
         portalArch.rotation.x = Math.PI / 2;
-        portalArch.position.set(0, 0.7, 1.22);
+        portalArch.position.set(0, 0.75, 1.1);
         group.add(portalArch);
 
-        const doorGeo = new THREE.BoxGeometry(0.6, 0.7, 0.1);
+        const doorGeo = new THREE.BoxGeometry(0.65, 0.75, 0.15);
         const door = new THREE.Mesh(doorGeo, darkDoorMat);
-        door.position.set(0, 0.35, 1.22);
+        door.position.set(0, 0.375, 1.1);
         group.add(door);
 
         // 5. Triangular Classical Pediment (Top Facade Crest)
         const pedimentShape = new THREE.Shape();
-        pedimentShape.moveTo(-1.3, 0);
-        pedimentShape.lineTo(0, 0.65);
-        pedimentShape.lineTo(1.3, 0);
+        pedimentShape.moveTo(-1.4, 0);
+        pedimentShape.lineTo(0, 0.7);
+        pedimentShape.lineTo(1.4, 0);
         pedimentShape.closePath();
 
-        const extrudeSettings = { depth: 0.15, bevelEnabled: true, bevelSegments: 2, steps: 1, bevelSize: 0.02, bevelThickness: 0.02 };
-        const pedimentGeo = new THREE.ExtrudeGeometry(pedimentShape, extrudeSettings);
-        const pediment = new THREE.Mesh(pedimentGeo, mainMat);
-        pediment.position.set(0, 2.15, 1.15);
+        const pedimentSettings = { depth: 0.2, bevelEnabled: true, bevelSegments: 2, steps: 1, bevelSize: 0.03, bevelThickness: 0.03 };
+        const pedimentGeo = new THREE.ExtrudeGeometry(pedimentShape, pedimentSettings);
+        const pediment = new THREE.Mesh(pedimentGeo, wallMat);
+        pediment.position.set(0, 2.3, 1.0);
         group.add(pediment);
 
-        // 6. Twin Bell Towers (3D Volumetric Side Towers with Textures)
-        const towerGeo = new THREE.BoxGeometry(0.65, 2.6, 0.65);
+        // 6. Twin Bell Towers (3D Volumetric Side Towers on Left & Right)
+        const towerGeo = new THREE.BoxGeometry(0.75, 2.8, 0.75);
         
-        // Left Tower
-        const leftTower = new THREE.Mesh(towerGeo, mainMat);
-        leftTower.position.set(-1.55, 1.3, 0.8);
+        // Left 3D Tower
+        const leftTower = new THREE.Mesh(towerGeo, wallMat);
+        leftTower.position.set(-1.7, 1.4, 0.75);
         leftTower.castShadow = true;
         group.add(leftTower);
 
-        // Right Tower
-        const rightTower = new THREE.Mesh(towerGeo, mainMat);
-        rightTower.position.set(1.55, 1.3, 0.8);
+        // Right 3D Tower
+        const rightTower = new THREE.Mesh(towerGeo, wallMat);
+        rightTower.position.set(1.7, 1.4, 0.75);
         rightTower.castShadow = true;
         group.add(rightTower);
 
         // Tower Roof Spire Caps
-        const spireGeo = new THREE.ConeGeometry(0.45, 0.8, 4);
+        const spireGeo = new THREE.ConeGeometry(0.5, 0.9, 4);
         const leftSpire = new THREE.Mesh(spireGeo, trimMat);
-        leftSpire.position.set(-1.55, 3.0, 0.8);
+        leftSpire.position.set(-1.7, 3.25, 0.75);
         leftSpire.rotation.y = Math.PI / 4;
         group.add(leftSpire);
 
         if (!isRuin) {
             const rightSpire = new THREE.Mesh(spireGeo, trimMat);
-            rightSpire.position.set(1.55, 3.0, 0.8);
+            rightSpire.position.set(1.7, 3.25, 0.75);
             rightSpire.rotation.y = Math.PI / 4;
             group.add(rightSpire);
         }
 
-        // Set mesh to A-Frame entity
+        // Set 3D mesh to A-Frame entity
         this.el.setObject3D('mesh', group);
     }
 });
