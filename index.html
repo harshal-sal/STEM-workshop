@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Chronoscope - Volumetric 3D Basilica of Bom Jesus, Goa</title>
+    <title>Basilica of Bom Jesus - Before & After Heritage AR</title>
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,11 +20,9 @@
     <script type="module" src="./src/components/controller-input.js"></script>
     <script type="module" src="./src/components/hand-input.js"></script>
     <script type="module" src="./src/components/site-anchor.js"></script>
-    <script type="module" src="./src/components/time-slider.js"></script>
     <script type="module" src="./src/components/room-occluder.js"></script>
     <script type="module" src="./src/components/avatar-guide.js"></script>
     <script type="module" src="./src/components/stt-ptt.js"></script>
-    <script type="module" src="./src/components/basilica-builder.js"></script>
 
     <style>
         * { box-sizing: border-box; }
@@ -111,99 +109,48 @@
             box-shadow: 0 6px 20px rgba(37, 99, 235, 0.6);
         }
 
-        /* Floating Time Scrubbing Controller */
-        #control-panel {
+        /* Floating Bottom "Before & After" Mode Switcher */
+        #view-panel {
             position: absolute;
             bottom: 24px;
             left: 50%;
             transform: translateX(-50%);
-            width: calc(100% - 40px);
-            max-width: 580px;
+            display: flex;
+            gap: 12px;
             background: rgba(15, 23, 42, 0.85);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 20px;
-            padding: 20px 28px;
+            border-radius: 40px;
+            padding: 10px 14px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.6);
             z-index: 100;
         }
 
-        .slider-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-
-        .slider-title {
+        .mode-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #94a3b8;
+            padding: 12px 24px;
+            border-radius: 30px;
             font-size: 14px;
             font-weight: 600;
-            color: #94a3b8;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .year-display {
-            font-size: 20px;
-            font-weight: 700;
-            color: #38bdf8;
-            text-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
-        }
-
-        .timeline-slider {
-            width: 100%;
-            -webkit-appearance: none;
-            height: 8px;
-            border-radius: 4px;
-            background: #334155;
-            outline: none;
             cursor: pointer;
-        }
-
-        .timeline-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #38bdf8, #818cf8);
-            cursor: pointer;
-            box-shadow: 0 0 14px rgba(56, 189, 248, 0.8);
-            border: 2px solid #ffffff;
-        }
-
-        .timeline-ticks {
+            transition: all 0.25 ease;
             display: flex;
-            justify-content: space-between;
-            margin-top: 8px;
-            font-size: 12px;
-            color: #64748b;
-            font-weight: 500;
+            align-items: center;
+            gap: 8px;
         }
 
-        .quick-actions {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            margin-top: 16px;
-        }
-
-        .action-chip {
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #cbd5e1;
-            padding: 8px 16px;
-            border-radius: 30px;
-            font-size: 13px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .action-chip:hover {
-            background: rgba(56, 189, 248, 0.15);
+        .mode-btn.active {
+            background: linear-gradient(135deg, #0284c7, #38bdf8);
+            color: #ffffff;
             border-color: #38bdf8;
-            color: #38bdf8;
+            box-shadow: 0 4px 16px rgba(56, 189, 248, 0.4);
+        }
+
+        .mode-btn:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.12);
+            color: #f8fafc;
         }
 
         /* Modal Info Dialog */
@@ -244,8 +191,8 @@
         <div class="brand-title">
             <div class="brand-icon">🏛️</div>
             <div class="brand-text">
-                <h1>Basilica of Bom Jesus (Volumetric 3D)</h1>
-                <p>3D WebXR Architectural Reconstruction • Old Goa</p>
+                <h1>Basilica of Bom Jesus</h1>
+                <p>Before & After Architectural Comparison • Old Goa</p>
             </div>
         </div>
         <button class="btn-ar" onclick="document.querySelector('a-scene').enterVR()">
@@ -253,24 +200,17 @@
         </button>
     </div>
 
-    <!-- Time Scrub Control Panel -->
-    <div id="control-panel">
-        <div class="slider-header">
-            <span class="slider-title">3D Timeline Scrubbing</span>
-            <span class="year-display" id="ui-year">Year 1700</span>
-        </div>
-        <input type="range" min="0" max="1" step="0.001" value="0.5" class="timeline-slider" id="ui-slider">
-        <div class="timeline-ticks">
-            <span>1594 (Golden Age 3D)</span>
-            <span>1750 (Colonial)</span>
-            <span>2025 (Exposed Laterite 3D)</span>
-        </div>
-
-        <div class="quick-actions">
-            <button class="action-chip" onclick="askGuideAbout('Tell me about the 3D architecture')">💬 Ask Guide</button>
-            <button class="action-chip" onclick="showHotspotModal('Tomb of St. Francis Xavier', 'The mausoleum inside the Basilica holds the sacred mortal remains of St. Francis Xavier, housed in an intricate silver casket crafted by Italian sculptor Giovanni Battista Foggini in 1698.')">📍 St. Xavier Tomb</button>
-            <button class="action-chip" onclick="showHotspotModal('Volumetric 3D Twin Towers', 'The twin bell towers flank the main nave, constructed with local red laterite stone and white lime mortar during the Portuguese colonial era.')">🔔 Twin Towers</button>
-        </div>
+    <!-- Floating "Before & After" View Selector -->
+    <div id="view-panel">
+        <button class="mode-btn active" id="btn-before" onclick="setMode('before')">
+            🏛️ Before (1594 Golden Age)
+        </button>
+        <button class="mode-btn" id="btn-after" onclick="setMode('after')">
+            🧱 After (Modern Laterite)
+        </button>
+        <button class="mode-btn" id="btn-split" onclick="setMode('side-by-side')">
+            🔄 Side-by-Side
+        </button>
     </div>
 
     <!-- Modal Dialog -->
@@ -290,75 +230,108 @@
             <img id="img-reconstructed" src="./assets/images/basilica_reconstructed.jpg">
             <img id="img-ruin" src="./assets/images/basilica_ruin.jpg">
             <img id="img-guide" src="./assets/images/guide_portrait.jpg">
+            <img id="img-sky" src="./assets/images/goa_skybox.jpg">
         </a-assets>
 
-        <!-- Lighting Setup: Warm Sunlight -->
-        <a-entity light="type: ambient; color: #FFF; intensity: 0.9"></a-entity>
-        <a-entity light="type: directional; color: #ffebc2; intensity: 1.4; castShadow: true" position="4 6 3"></a-entity>
+        <!-- Lighting Setup: Warm Tropical Sunset Sunlight -->
+        <a-entity light="type: ambient; color: #FFF; intensity: 0.95"></a-entity>
+        <a-entity light="type: directional; color: #ffdfa9; intensity: 1.5; castShadow: true" position="5 8 4"></a-entity>
 
-        <a-sky color="#0b1329"></a-sky>
+        <!-- Panoramic Goa Sunset Skybox Background -->
+        <a-sky src="#img-sky" rotation="0 -90 0"></a-sky>
 
-        <!-- Camera Rig with Orbit Controls for 360-degree 3D View -->
+        <!-- Camera Rig with Orbit Controls -->
         <a-entity id="camera-rig" position="0 0 0">
-            <a-entity id="main-camera" camera look-controls orbit-controls="target: 0 1.2 0; initialPosition: 0 2.2 4.5; enableDamping: true; dampingFactor: 0.08"></a-entity>
+            <a-entity id="main-camera" camera look-controls orbit-controls="target: 0 1.2 0; initialPosition: 0 2.0 4.2; enableDamping: true; dampingFactor: 0.08"></a-entity>
             
-            <!-- XR Controllers -->
+            <!-- Quest Controllers & Hand Tracking -->
             <a-entity id="right-controller" controller-input="hand: right"></a-entity>
             <a-entity id="left-controller" controller-input="hand: left"></a-entity>
             <a-entity id="right-hand" hand-input="hand: right"></a-entity>
             <a-entity id="left-hand" hand-input="hand: left"></a-entity>
         </a-entity>
 
-        <!-- Heritage Site Container (Volumetric 3D Architecture) -->
-        <a-entity id="site-container" site-anchor time-slider position="0 0 0">
+        <!-- Heritage Site Container -->
+        <a-entity id="site-container" site-anchor position="0 0 0">
             
-            <!-- Floating Year Title -->
-            <a-text id="year-text" value="Year: 1700 (Colonial Era)" position="0 3.6 0" align="center" scale="0.85 0.85 0.85" color="#38bdf8"></a-text>
+            <!-- Mode Title Tag -->
+            <a-text id="mode-text" value="BEFORE: 1594 Golden Age Reconstruction" position="0 3.2 0" align="center" scale="0.85 0.85 0.85" color="#38bdf8"></a-text>
 
-            <!-- 1. Full 3D Volumetric Reconstructed Model (1594) -->
-            <a-entity id="reconstructed-model" basilica-builder="type: reconstructed" position="0 0 0"></a-entity>
+            <!-- 1. BEFORE MODEL (1594 Golden Age Facade Structure) -->
+            <a-entity id="model-before" position="0 0 0" visible="true">
+                <a-plane width="3.6" height="2.4" src="#img-reconstructed" material="roughness: 0.4" shadow="cast: true"></a-plane>
+                <!-- Architectural Framing Pillars -->
+                <a-box position="-1.82 0 0.05" width="0.12" height="2.45" depth="0.15" color="#d97706"></a-box>
+                <a-box position="1.82 0 0.05" width="0.12" height="2.45" depth="0.15" color="#d97706"></a-box>
+                <a-box position="0 1.22 0.05" width="3.76" height="0.12" depth="0.15" color="#d97706"></a-box>
+            </a-entity>
 
-            <!-- 2. Full 3D Volumetric Modern Ruin / Laterite Model (2025) -->
-            <a-entity id="ruin-model" basilica-builder="type: ruin" position="0 0 0"></a-entity>
+            <!-- 2. AFTER MODEL (Modern Laterite Ruin Facade Structure) -->
+            <a-entity id="model-after" position="0 0 0" visible="false">
+                <a-plane width="3.6" height="2.4" src="#img-ruin" material="roughness: 0.8" shadow="cast: true"></a-plane>
+                <!-- Weathered Laterite Framing Pillars -->
+                <a-box position="-1.82 0 0.05" width="0.12" height="2.45" depth="0.15" color="#782e1e"></a-box>
+                <a-box position="1.82 0 0.05" width="0.12" height="2.45" depth="0.15" color="#782e1e"></a-box>
+                <a-box position="0 1.22 0.05" width="3.76" height="0.12" depth="0.15" color="#782e1e"></a-box>
+            </a-entity>
 
-            <!-- 3D Ground Base Platform -->
-            <a-cylinder position="0 -0.05 0" radius="3.2" height="0.1" color="#1e293b" material="roughness: 0.9" shadow="receive: true">
-                <a-ring position="0 0.051 0" rotation="-90 0 0" radius-inner="3.15" radius-outer="3.2" color="#38bdf8" material="emissive: #38bdf8; emissiveIntensity: 0.6"></a-ring>
+            <!-- Paved Stone Courtyard Ground Base -->
+            <a-cylinder position="0 -1.22 0" radius="3.5" height="0.1" color="#1e293b" material="roughness: 0.95" shadow="receive: true">
+                <a-ring position="0 0.051 0" rotation="-90 0 0" radius-inner="3.45" radius-outer="3.5" color="#38bdf8" material="emissive: #38bdf8; emissiveIntensity: 0.6"></a-ring>
             </a-cylinder>
 
-            <!-- 3D Hotspot 1: St. Xavier Tomb -->
-            <a-entity position="0.8 1.4 1.4" class="hotspot clickable" onclick="showHotspotModal('Tomb of St. Francis Xavier', 'The mausoleum inside the Basilica holds the sacred mortal remains of St. Francis Xavier, housed in an intricate silver casket crafted by Florentine artist Foggini in 1698.')">
+            <!-- Hotspot 1: St. Xavier Tomb -->
+            <a-entity position="0.9 0.4 0.2" class="hotspot clickable" onclick="showHotspotModal('Tomb of St. Francis Xavier', 'The mausoleum inside the Basilica holds the sacred mortal remains of St. Francis Xavier, housed in an intricate silver casket crafted by Italian sculptor Giovanni Battista Foggini in 1698.')">
                 <a-sphere radius="0.09" color="#ec4899" material="emissive: #ec4899; emissiveIntensity: 0.6"></a-sphere>
                 <a-ring rotation="-90 0 0" radius-inner="0.11" radius-outer="0.14" color="#f472b6" material="emissive: #f472b6; emissiveIntensity: 0.8"></a-ring>
                 <a-text value="St. Xavier Tomb" position="0 0.22 0" align="center" scale="0.38 0.38 0.38" color="#f472b6"></a-text>
             </a-entity>
 
-            <!-- 3D Hotspot 2: Twin Bell Towers -->
-            <a-entity position="-1.45 2.2 0.9" class="hotspot clickable" onclick="showHotspotModal('Volumetric 3D Twin Towers', 'The twin bell towers flank the main nave, constructed with local red laterite stone and white lime mortar during the Portuguese colonial era.')">
+            <!-- Hotspot 2: Laterite Facade Info -->
+            <a-entity position="-0.9 -0.2 0.2" class="hotspot clickable" onclick="showHotspotModal('Exposed Laterite Facade', 'In 1950, Portuguese conservators peeled away the white lime plaster coat to reveal the distinctive porous red laterite stone structure seen today.')">
                 <a-sphere radius="0.09" color="#f59e0b" material="emissive: #f59e0b; emissiveIntensity: 0.6"></a-sphere>
                 <a-ring rotation="-90 0 0" radius-inner="0.11" radius-outer="0.14" color="#fbbf24" material="emissive: #fbbf24; emissiveIntensity: 0.8"></a-ring>
-                <a-text value="Twin Bell Towers" position="0 0.22 0" align="center" scale="0.38 0.38 0.38" color="#fbbf24"></a-text>
+                <a-text value="Laterite Facade" position="0 0.22 0" align="center" scale="0.38 0.38 0.38" color="#fbbf24"></a-text>
             </a-entity>
 
             <!-- Holographic Avatar Guide Entity (Father Domingos) -->
-            <a-entity id="avatar-guide" avatar-guide position="-2.2 0 1.2" rotation="0 35 0"></a-entity>
+            <a-entity id="avatar-guide" avatar-guide position="-2.2 -1.2 0.8" rotation="0 30 0"></a-entity>
 
         </a-entity>
     </a-scene>
 
     <script>
-        const slider = document.getElementById('ui-slider');
-        const yearDisplay = document.getElementById('ui-year');
+        function setMode(mode) {
+            const beforeModel = document.getElementById('model-before');
+            const afterModel = document.getElementById('model-after');
+            const modeText = document.getElementById('mode-text');
 
-        slider.addEventListener('input', (e) => {
-            const val = parseFloat(e.target.value);
-            window.dispatchEvent(new CustomEvent('ui-time-change', { detail: { value: val } }));
-        });
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
 
-        window.addEventListener('app-time-synced', (e) => {
-            slider.value = e.detail.t;
-            yearDisplay.textContent = `Year ${e.detail.year}`;
-        });
+            if (mode === 'before') {
+                document.getElementById('btn-before').classList.add('active');
+                beforeModel.setAttribute('visible', 'true');
+                beforeModel.setAttribute('position', '0 0 0');
+                afterModel.setAttribute('visible', 'false');
+                modeText.setAttribute('value', 'BEFORE: 1594 Golden Age Reconstruction');
+                modeText.setAttribute('color', '#38bdf8');
+            } else if (mode === 'after') {
+                document.getElementById('btn-after').classList.add('active');
+                beforeModel.setAttribute('visible', 'false');
+                afterModel.setAttribute('visible', 'true');
+                afterModel.setAttribute('position', '0 0 0');
+                modeText.setAttribute('value', 'AFTER: Modern Exposed Laterite Facade');
+                modeText.setAttribute('color', '#f97316');
+            } else if (mode === 'side-by-side') {
+                document.getElementById('btn-split').classList.add('active');
+                beforeModel.setAttribute('visible', 'true');
+                beforeModel.setAttribute('position', '-2.0 0 0');
+                afterModel.setAttribute('visible', 'true');
+                afterModel.setAttribute('position', '2.0 0 0');
+                modeText.setAttribute('value', 'SIDE-BY-SIDE COMPARISON (1594 vs Present)');
+                modeText.setAttribute('color', '#a855f7');
+            }
+        }
 
         function showHotspotModal(title, desc) {
             document.getElementById('modal-title').textContent = title;
@@ -368,13 +341,6 @@
 
         function hideHotspotModal() {
             document.getElementById('info-modal').classList.remove('active');
-        }
-
-        function askGuideAbout(query) {
-            const guideEntity = document.getElementById('avatar-guide');
-            if (guideEntity && guideEntity.components['avatar-guide']) {
-                guideEntity.components['avatar-guide'].triggerSpeechQuery(query);
-            }
         }
     </script>
 </body>
