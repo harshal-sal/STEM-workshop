@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Basilica of Bom Jesus - Volumetric 3D Heritage AR</title>
+    <title>Kal AI - 3D Heritage AR (Basilica of Bom Jesus)</title>
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -52,23 +52,24 @@
         }
 
         .brand-icon {
-            width: 38px;
-            height: 38px;
-            background: linear-gradient(135deg, #38bdf8, #818cf8);
-            border-radius: 10px;
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, #0284c7, #38bdf8);
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 700;
-            font-size: 20px;
-            box-shadow: 0 4px 14px rgba(56, 189, 248, 0.4);
+            font-weight: 800;
+            font-size: 22px;
+            color: #ffffff;
+            box-shadow: 0 4px 16px rgba(56, 189, 248, 0.4);
         }
 
         .brand-text h1 {
             margin: 0;
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 700;
-            background: linear-gradient(90deg, #f3f4f6, #9ca3af);
+            background: linear-gradient(90deg, #38bdf8, #818cf8);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -76,7 +77,7 @@
         .brand-text p {
             margin: 2px 0 0 0;
             font-size: 12px;
-            color: #38bdf8;
+            color: #94a3b8;
             font-weight: 500;
         }
 
@@ -179,13 +180,13 @@
 </head>
 <body>
 
-    <!-- Header UI -->
+    <!-- Kal AI Header UI -->
     <div id="app-header">
         <div class="brand-title">
-            <div class="brand-icon">🏛️</div>
+            <div class="brand-icon">K</div>
             <div class="brand-text">
-                <h1>Basilica of Bom Jesus (Volumetric 3D)</h1>
-                <p>3D WebXR Monument Reconstruction • Old Goa</p>
+                <h1>Kal AI</h1>
+                <p>3D Heritage Reconstruction • Basilica of Bom Jesus, Goa</p>
             </div>
         </div>
         <button class="btn-ar" onclick="document.querySelector('a-scene').enterVR()">
@@ -223,15 +224,15 @@
             <img id="img-reconstructed" src="/assets/basilica_reconstructed-BcQc3cuV.jpg">
             <img id="img-ruin" src="/assets/basilica_ruin-DgS42iCF.jpg">
             <img id="img-guide" src="/assets/guide_portrait-qCYU5I24.jpg">
-            <img id="img-sky" src="/assets/goa_skybox-DHNUm7Ov.jpg">
+            <img id="img-ground" src="/assets/courtyard_ground-CQNOkwUK.jpg">
         </a-assets>
 
-        <!-- Lighting Setup: Warm Tropical Sunset Sunlight -->
-        <a-entity light="type: ambient; color: #FFF; intensity: 0.95"></a-entity>
-        <a-entity light="type: directional; color: #ffdfa9; intensity: 1.5; castShadow: true" position="5 8 4"></a-entity>
+        <!-- Dynamic Lighting Setup -->
+        <a-entity light="type: ambient; color: #E2E8F0; intensity: 0.9"></a-entity>
+        <a-entity light="type: directional; color: #ffebc2; intensity: 1.5; castShadow: true" position="5 8 4"></a-entity>
 
-        <!-- Panoramic Goa Sunset Skybox Background -->
-        <a-sky src="#img-sky" rotation="0 -90 0"></a-sky>
+        <!-- Clean Sky Atmosphere (No City Image) -->
+        <a-sky color="#0c1527"></a-sky>
 
         <!-- Camera Rig with Orbit Controls for 360-degree 3D View -->
         <a-entity id="camera-rig" position="0 0 0">
@@ -256,10 +257,8 @@
             <!-- 2. FULL VOLUMETRIC 3D AFTER MODEL (Modern Laterite Ruin) -->
             <a-entity id="model-after" basilica-builder="type: ruin" position="0 0 0" visible="false"></a-entity>
 
-            <!-- 3D Paved Stone Courtyard Ground Base -->
-            <a-cylinder position="0 -0.05 0" radius="3.8" height="0.1" color="#1e293b" material="roughness: 0.95" shadow="receive: true">
-                <a-ring position="0 0.051 0" rotation="-90 0 0" radius-inner="3.75" radius-outer="3.8" color="#38bdf8" material="emissive: #38bdf8; emissiveIntensity: 0.6"></a-ring>
-            </a-cylinder>
+            <!-- 3D Paved Stone Courtyard Ground Plane -->
+            <a-plane position="0 -0.05 0" rotation="-90 0 0" width="30" height="30" src="#img-ground" material="repeat: 8 8; roughness: 0.9" shadow="receive: true"></a-plane>
 
             <!-- 3D Hotspot 1: St. Xavier Tomb -->
             <a-entity position="1.1 1.4 1.4" class="hotspot clickable" onclick="showHotspotModal('Tomb of St. Francis Xavier', 'The mausoleum inside the Basilica holds the sacred mortal remains of St. Francis Xavier, housed in an intricate silver casket crafted by Florentine artist Foggini in 1698.')">
