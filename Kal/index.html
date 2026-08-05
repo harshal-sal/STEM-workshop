@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>ChronoScape VR — Travel Through Time | Heritage Tourism VR</title>
+
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="ChronoScape VR is a WebXR time-reconstruction simulation for Meta Quest 3S. Experience ancient archaeological ruins coming back to life in real-time with Sketchfab 3D monuments.">
+  <meta name="keywords" content="WebXR, A-Frame, VR, Meta Quest 3S, Virtual Reality, Archaeology, Sketchfab, 3D Architecture, Historical Reconstruction">
+  <meta name="author" content="Antigravity XR DeepMind Team">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <!-- A-Frame Library (v1.4.2 stable WebXR build for Meta Quest 3S) -->
+  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+
+  <!-- ChronoScape VR Custom Components -->
+  <script src="components/audio-manager.js"></script>
+  <script src="components/visual-effects.js"></script>
+  <script src="components/interaction-system.js"></script>
+  <script src="components/time-reconstruction.js"></script>
+  <script src="components/npc-controller.js"></script>
+  <script src="components/info-panel.js"></script>
+  <script src="components/guide-controller.js"></script>
+  <script src="components/sketchfab-model.js"></script>
+  <script src="js/main.js"></script>
+</head>
+<body>
+
+  <!-- ============================================================
+       2D UI OVERLAYS (Loading, Intro Splash, HUD, Era Switcher)
+       ============================================================ -->
+
+  <!-- Loading Screen -->
+  <div id="loading-screen">
+    <h1 class="loading-logo">CHRONOSCAPE VR</h1>
+    <p class="loading-subtitle">Spatial Time Machine • Meta Quest 3S</p>
+    
+    <div class="loading-timeline">
+      <div class="timeline-dot"></div>
+      <div class="timeline-line"></div>
+      <div class="timeline-dot"></div>
+      <div class="timeline-line"></div>
+      <div class="timeline-dot"></div>
+    </div>
+
+    <div class="loading-bar-container">
+      <div class="loading-bar-fill"></div>
+    </div>
+    <div class="loading-status">Loading Sketchfab 3D architectural monuments…</div>
+  </div>
+
+  <!-- Desktop Intro Splash Modal -->
+  <div id="intro-splash" class="hidden">
+    <h1 class="splash-title">CHRONOSCAPE</h1>
+    <p class="splash-tagline">Travel Through Time</p>
+    <div class="splash-divider"></div>
+    <p class="splash-description">
+      Step into a ruined ancient temple complex featuring 3D monuments imported from <strong>Sketchfab</strong>. Press your controller <strong>Right Trigger</strong> or spacebar to trigger the 10-second AI time reconstruction and restore the city to its golden age (~2100 BCE).
+    </p>
+
+    <button id="btn-enter" class="btn-enter-vr">ENTER EXPERIENCE</button>
+
+    <div class="splash-features">
+      <span class="feature-chip">Sketchfab 3D Models</span>
+      <span class="feature-chip">Meta Quest 3S Ready</span>
+      <span class="feature-chip">90 FPS Optimized</span>
+      <span class="feature-chip">AI Historical Guide</span>
+    </div>
+  </div>
+
+  <!-- HUD Overlay -->
+  <div id="hud-overlay">
+    <div class="hud-top-bar">
+      <span class="hud-era-label">Temporal Period:</span>
+      <span class="hud-era-badge">Present Day</span>
+    </div>
+
+    <div class="hud-controls">
+      <button id="btn-aerial" class="hud-btn">🎬 Cinematic Aerial Tour</button>
+    </div>
+  </div>
+
+  <!-- Era Switcher Floating Menu -->
+  <div id="era-switcher"></div>
+
+  <!-- Notification Toast -->
+  <div id="notification-toast"></div>
+
+
+  <!-- ============================================================
+       A-FRAME 3D SCENE SETUP
+       ============================================================ -->
+  <a-scene 
+    webxr="optionalFeatures: hit-test, local-floor; referenceSpaceType: local-floor"
+    renderer="antialias: true; colorManagement: true; highRefreshRate: true; physicallyCorrectLights: true; exposure: 1.1; powerPreference: high-performance"
+    fog="type: linear; color: #8ba3bc; near: 15; far: 65"
+    audio-manager
+    historical-layer
+    time-reconstruction
+    animation-manager>
+
+    <!-- ── Asset Management (Sketchfab & WebXR 3D Models) ─────── -->
+    <a-assets timeout="15000">
+      <!-- Sketchfab / WebXR 3D GLB Models -->
+      <a-asset-item id="model-ruined-arch" src="https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Corset/glTF-Binary/Corset.glb"></a-asset-item>
+      
+      <!-- Audio Assets -->
+      <audio id="audio-wind" src="https://cdn.aframe.io/basic-guide/audio/backgroundmagic.ogg" crossorigin="anonymous"></audio>
+      <audio id="audio-birds" src="https://cdn.aframe.io/basic-guide/audio/backgroundmagic.ogg" crossorigin="anonymous"></audio>
+    </a-assets>
+
+    <!-- ── Lighting & Environment ─────────────────────────────── -->
+    <a-sky id="scene-sky" color="#87CEEB" animation__sky="property: color; dur: 3000; easing: easeInOutQuad"></a-sky>
+
+    <!-- Sun Light (Directional with dynamic shadows) -->
+    <a-entity 
+      id="sunlight" 
+      light="type: directional; color: #ffd580; intensity: 1.1; castShadow: true; shadowMapWidth: 1024; shadowMapHeight: 1024" 
+      position="15 30 20">
+    </a-entity>
+
+    <!-- Ambient Sky Light -->
+    <a-entity 
+      id="ambient-light" 
+      light="type: ambient; color: #7090b0; intensity: 0.6">
+    </a-entity>
+
+    <!-- Atmospheric God Rays -->
+    <a-entity god-rays position="0 0 0"></a-entity>
+
+
+    <!-- ── Player Rig & VR Controllers ────────────────────────── -->
+    <a-entity id="player-rig" position="0 0 10" rotation="0 0 0">
+      
+      <!-- Camera -->
+      <a-camera 
+        id="player-camera" 
+        position="0 1.6 0" 
+        look-controls="pointerLockEnabled: false"
+        wasd-controls="acceleration: 20">
+        <a-cursor 
+          id="mouse-cursor"
+          fuse="false"
+          raycaster="objects: .interactive"
+          material="color: #4fc3f7; shader: flat; opacity: 0.6"
+          geometry="primitive: ring; radiusInner: 0.005; radiusOuter: 0.01"
+          position="0 0 -1">
+        </a-cursor>
+      </a-camera>
+
+      <!-- Left Controller: Smooth Locomotion & Snap Turn -->
+      <a-entity 
+        id="left-hand" 
+        oculus-touch-controls="hand: left"
+        smooth-locomotion="speed: 3.2"
+        snap-turn="angle: 30">
+        <a-entity 
+          geometry="primitive: box; width: 0.04; height: 0.04; depth: 0.15" 
+          material="color: #222; opacity: 0.8">
+        </a-entity>
+      </a-entity>
+
+      <!-- Right Controller: Laser Pointer UI & Teleport & Reconstruction Trigger -->
+      <a-entity 
+        id="right-hand" 
+        oculus-touch-controls="hand: right"
+        teleport-controller
+        laser-pointer="color: #4fc3f7; length: 12"
+        raycaster="objects: .interactive; far: 12">
+        <a-entity 
+          geometry="primitive: box; width: 0.04; height: 0.04; depth: 0.15" 
+          material="color: #222; opacity: 0.8">
+        </a-entity>
+      </a-entity>
+    </a-entity>
+
+
+    <!-- ── Terrain & Ground Base ──────────────────────────────── -->
+    <a-entity id="environment-container">
+      <!-- Ground Floor Plane -->
+      <a-plane 
+        id="terrain-ground" 
+        position="0 0 0" 
+        rotation="-90 0 0" 
+        width="120" 
+        height="120" 
+        color="#4a3e2e" 
+        roughness="0.95" 
+        metalness="0.05">
+      </a-plane>
+
+      <!-- Sacred Cobblestone Way Road -->
+      <a-plane 
+        position="0 0.01 5" 
+        rotation="-90 0 0" 
+        width="6" 
+        height="35" 
+        color="#6b5b4b" 
+        roughness="0.8">
+      </a-plane>
+
+      <!-- Surrounding Grass / Soil Hills -->
+      <a-cylinder 
+        position="0 -0.5 0" 
+        radius="55" 
+        height="1" 
+        color="#3d4f28" 
+        roughness="1.0">
+      </a-cylinder>
+
+      <!-- Particle FX -->
+      <a-entity dust-particles="count: 90; spread: 25; color: #d4a843"></a-entity>
+      <a-entity floating-leaves="count: 35; spread: 16"></a-entity>
+      <a-entity id="reconstruction-particles" magic-particles="count: 150; radius: 10"></a-entity>
+    </a-entity>
+
+
+    <!-- ============================================================
+         RUINED ARCHAEOLOGICAL SITE (Present Era Layer + Sketchfab 3D)
+         ============================================================ -->
+    <a-entity id="ruins-layer" data-layer="ruins">
+      
+      <!-- Sketchfab Ruined Monument Model 1 (Agora Altar / Archway) -->
+      <a-entity 
+        position="-10 0 -6" 
+        rotation="0 45 0"
+        sketchfab-model="
+          src: #model-ruined-arch; 
+          targetScale: 4.5; 
+          autoCenter: true;
+          title: Sketchfab Ruined Temple Gateway; 
+          period: Hellenistic Period (300 BCE); 
+          purpose: Ceremonial Gateway to the Sacred Way; 
+          material: Weathered Pentelic Marble; 
+          fact: Scanned 3D architectural monument imported from Sketchfab showing seismic erosion.">
+      </a-entity>
+
+      <!-- Sketchfab Ruined Colonnade Monument 2 (East Courtyard) -->
+      <a-entity 
+        position="10 0 -6" 
+        rotation="0 -35 0"
+        sketchfab-model="
+          src: assets/models/ruined_monument.glb; 
+          targetScale: 5.0; 
+          autoCenter: true;
+          title: Sketchfab Great Colonnade Fragment; 
+          period: Classical Greek Era; 
+          purpose: Outer Agora Courtyard Support; 
+          material: Poros Limestone & Marble; 
+          fact: Photogrammetry scan of ancient sanctuary ruins. Drop custom Sketchfab .glb into assets/models/ for live replacement.">
+      </a-entity>
+
+      <!-- Broken Pillar 1 (Front Left) -->
+      <a-entity 
+        class="interactive"
+        historical-object="title: Broken Doric Shaft; period: 500 BCE Ruins; purpose: Structural Colonnade Support; material: Weathered Limestone; fact: Fractured during the great earthquake of 500 BCE."
+        position="-6 1.2 -4" 
+        rotation="15 25 -10">
+        <a-cylinder radius="0.6" height="2.4" color="#8b7355" roughness="0.95"></a-cylinder>
+        <a-cylinder position="0.8 -0.8 0.3" rotation="80 0 10" radius="0.55" height="1.8" color="#7a6245" roughness="0.95"></a-cylinder>
+      </a-entity>
+
+      <!-- Broken Pillar 2 (Front Right) -->
+      <a-entity 
+        class="interactive"
+        historical-object="title: Collapsed Capital; period: Hellenistic Era; purpose: Monument Decorative Cap; material: Marble & Poros Stone; fact: Carved with sacred acanthus leaf motifs."
+        position="6 0.8 -4" 
+        rotation="-5 -30 20">
+        <a-cylinder radius="0.58" height="1.6" color="#7c674b" roughness="0.95"></a-cylinder>
+        <a-box position="0 -0.9 0.4" width="1.3" height="0.4" depth="1.3" color="#68543a" roughness="0.9"></a-box>
+      </a-entity>
+
+      <!-- Ruined Wall Fragments -->
+      <a-box position="-9 1.0 -10" width="4" height="2.0" depth="0.8" color="#6e5940" roughness="0.95" rotation="0 15 0"></a-box>
+      <a-box position="9 0.8 -10" width="3.5" height="1.6" depth="0.8" color="#6b563d" roughness="0.95" rotation="0 -20 0"></a-box>
+      <a-box position="0 0.5 -16" width="10" height="1.0" depth="1.0" color="#5c4932" roughness="0.95"></a-box>
+
+      <!-- Ruined Site Sign Board -->
+      <a-entity position="0 1.2 3.5" class="interactive" historical-object="title: Archaeological Site No. 4; period: Present Day (2026 CE); purpose: World Heritage Ruin Site; material: Exposed Masonry; fact: Under active preservation by UNESCO & ChronoScape Initiative featuring Sketchfab 3D assets.">
+        <a-box width="1.4" height="0.9" depth="0.05" color="#2b2013" position="0 0 0"></a-box>
+        <a-cylinder radius="0.03" height="1.4" color="#4a3e2e" position="-0.6 -0.6 0"></a-cylinder>
+        <a-cylinder radius="0.03" height="1.4" color="#4a3e2e" position="0.6 -0.6 0"></a-cylinder>
+        <a-text value="ARCHAEOLOGICAL RUINS\nTemple of Apollo • Sketchfab 3D\n[Press Trigger to Reconstruct]" align="center" color="#d4a843" width="1.2" position="0 0 0.03"></a-text>
+      </a-entity>
+    </a-entity>
+
+
+    <!-- ============================================================
+         RESTORED ANCIENT TEMPLE (Materialised Reconstruction Layer + Sketchfab 3D)
+         ============================================================ -->
+    <a-entity id="restored-layer" data-layer="restored">
+      
+      <!-- Sketchfab Restored Sanctuary Monument Model (Main Center Altar) -->
+      <a-entity 
+        data-decor
+        visible="false"
+        position="0 0.3 -10" 
+        rotation="0 0 0"
+        sketchfab-model="
+          src: assets/models/restored_temple.glb; 
+          targetScale: 18.0; 
+          autoCenter: true;
+          title: Sketchfab Restored Temple Complex; 
+          period: Golden Age (~2100 BCE); 
+          purpose: Main City Sanctuary & Treasury; 
+          material: Polished Pentelic Marble & Gold Leaf; 
+          fact: High-fidelity 3D historical reconstruction model imported from Sketchfab.">
+      </a-entity>
+
+      <!-- Temple Base Stylobate Platform -->
+      <a-box 
+        position="0 0.3 -10" 
+        width="22" 
+        height="0.6" 
+        depth="26" 
+        color="#d0c2a5" 
+        roughness="0.4">
+      </a-box>
+
+      <!-- ── Colonnade Columns (rise from ground on reconstruction) ── -->
+      <!-- Left Colonnade -->
+      <a-cylinder data-column data-target-pos="-8 4 -2" position="-8 -5 -2" radius="0.6" height="7" color="#ebdcc0" roughness="0.3" visible="false" class="interactive" historical-object="title: West Colonnade Shaft 1; period: ~2100 BCE; purpose: Structural Pillar; material: Polished Pentelic Marble; fact: Built with precise optical entasis curves."></a-cylinder>
+      <a-cylinder data-column data-target-pos="-8 4 -7" position="-8 -5 -7" radius="0.6" height="7" color="#ebdcc0" roughness="0.3" visible="false" class="interactive" historical-object="title: West Colonnade Shaft 2; period: ~2100 BCE; purpose: Structural Pillar; material: Polished Marble; fact: Fluted with 20 parallel sharp grooves."></a-cylinder>
+      <a-cylinder data-column data-target-pos="-8 4 -12" position="-8 -5 -12" radius="0.6" height="7" color="#ebdcc0" roughness="0.3" visible="false"></a-cylinder>
+      <a-cylinder data-column data-target-pos="-8 4 -17" position="-8 -5 -17" radius="0.6" height="7" color="#ebdcc0" roughness="0.3" visible="false"></a-cylinder>
+
+      <!-- Right Colonnade -->
+      <a-cylinder data-column data-target-pos="8 4 -2" position="8 -5 -2" radius="0.6" height="7" color="#ebdcc0" roughness="0.3" visible="false"></a-cylinder>
+      <a-cylinder data-column data-target-pos="8 4 -7" position="8 -5 -7" radius="0.6" height="7" color="#ebdcc0" roughness="0.3" visible="false"></a-cylinder>
+      <a-cylinder data-column data-target-pos="8 4 -12" position="8 -5 -12" radius="0.6" height="7" color="#ebdcc0" roughness="0.3" visible="false"></a-cylinder>
+      <a-cylinder data-column data-target-pos="8 4 -17" position="8 -5 -17" radius="0.6" height="7" color="#ebdcc0" roughness="0.3" visible="false"></a-cylinder>
+
+      <!-- Front Portico Columns -->
+      <a-cylinder data-column data-target-pos="-3 4 1" position="-3 -5 1" radius="0.6" height="7" color="#f0e2c8" roughness="0.3" visible="false"></a-cylinder>
+      <a-cylinder data-column data-target-pos="3 4 1" position="3 -5 1" radius="0.6" height="7" color="#f0e2c8" roughness="0.3" visible="false"></a-cylinder>
+
+      <!-- ── Rebuilt Walls (scale up on reconstruction) ────────── -->
+      <a-box data-wall position="-7.5 4 -10" scale="1 0.01 1" width="0.6" height="7" depth="18" color="#e4d4b8" roughness="0.4" visible="false"></a-box>
+      <a-box data-wall position="7.5 4 -10" scale="1 0.01 1" width="0.6" height="7" depth="18" color="#e4d4b8" roughness="0.4" visible="false"></a-box>
+      <a-box data-wall position="0 4 -18.5" scale="1 0.01 1" width="15" height="7" depth="0.6" color="#e0cfb2" roughness="0.4" visible="false"></a-box>
+
+      <!-- ── Temple Roof & Architrave (drops from sky) ────────── -->
+      <a-entity data-roof data-target-y="8" position="0 18 -10" visible="false">
+        <!-- Architrave Beam -->
+        <a-box width="18" height="1.0" depth="20" color="#d8c7a6" roughness="0.3"></a-box>
+        <!-- Triangular Pediment Front -->
+        <a-prism position="0 1.6 9.8" rotation="0 0 0" scale="8.5 2.2 0.4" color="#cbb894"></a-prism>
+        <!-- Gilded Roof Tiles -->
+        <a-box position="0 2.2 0" width="17" height="0.4" depth="19" color="#b8860b" roughness="0.2" metalness="0.6"></a-box>
+      </a-entity>
+
+      <!-- ── Torches & Fire Effects ────────────────────────────── -->
+      <a-entity data-torch position="-2.6 1.8 1.2" torch-flame visible="false"></a-entity>
+      <a-entity data-torch position="2.6 1.8 1.2" torch-flame visible="false"></a-entity>
+      <a-entity data-torch position="-7 1.8 -8" torch-flame visible="false"></a-entity>
+      <a-entity data-torch position="7 1.8 -8" torch-flame visible="false"></a-entity>
+
+      <!-- ── Decorative Flags & Banners ────────────────────────── -->
+      <a-entity data-flag data-decor position="-5.5 0 2" flag-wave visible="false"></a-entity>
+      <a-entity data-flag data-decor position="5.5 0 2" flag-wave visible="false"></a-entity>
+
+      <!-- ── Sanctuary Golden Statue (Cella Interior) ──────────── -->
+      <a-entity 
+        data-decor 
+        visible="false"
+        class="interactive"
+        historical-object="title: Golden Statue of Apollo; period: Golden Age (~2100 BCE); purpose: Divine Temple Deity Idol; material: Chryselephantine (Gold & Ivory); fact: Stood 6 meters tall, holding a silver bow and golden lyre."
+        position="0 2.5 -15">
+        <a-cylinder radius="1.2" height="0.8" color="#d4a843" metalness="0.8" roughness="0.2"></a-cylinder>
+        <a-box position="0 2.0 0" width="0.9" height="3.2" depth="0.6" color="#ffd700" metalness="0.9" roughness="0.1"></a-box>
+        <a-sphere position="0 3.9 0" radius="0.4" color="#ffe066" metalness="0.9" roughness="0.1"></a-sphere>
+      </a-entity>
+    </a-entity>
+
+
+    <!-- ============================================================
+         HISTORICAL NPCS (AI Citizens, Guards, Merchants)
+         ============================================================ -->
+    <a-entity id="npc-container" data-layer="npcs">
+      
+      <!-- AI Guide Archilochus -->
+      <a-entity 
+        id="guide-avatar" 
+        guide-controller="name: Archilochus; greetDelay: 2500" 
+        position="0 0 4.5"
+        class="interactive">
+      </a-entity>
+
+      <!-- Merchant NPC -->
+      <a-entity 
+        id="npc-merchant" 
+        npc-controller="type: merchant; walkRadius: 3; walkSpeed: 0.5" 
+        position="-5 0 2"
+        visible="false">
+      </a-entity>
+
+      <!-- Guard NPC 1 -->
+      <a-entity 
+        id="npc-guard-1" 
+        npc-controller="type: guard; walkRadius: 1; lookAtPlayer: true" 
+        position="-2.5 0 1.5"
+        visible="false">
+      </a-entity>
+
+      <!-- Guard NPC 2 -->
+      <a-entity 
+        id="npc-guard-2" 
+        npc-controller="type: guard; walkRadius: 1; lookAtPlayer: true" 
+        position="2.5 0 1.5"
+        visible="false">
+      </a-entity>
+
+      <!-- Priest NPC -->
+      <a-entity 
+        id="npc-priest" 
+        npc-controller="type: priest; walkRadius: 2" 
+        position="0 0.6 -8"
+        visible="false">
+      </a-entity>
+
+      <!-- Historian NPC -->
+      <a-entity 
+        id="npc-historian" 
+        npc-controller="type: historian; walkRadius: 4" 
+        position="6 0 0"
+        visible="false">
+      </a-entity>
+
+      <!-- Villager Citizens -->
+      <a-entity 
+        id="npc-villager-1" 
+        npc-controller="type: villager; walkRadius: 5" 
+        position="4 0 5"
+        visible="false">
+      </a-entity>
+      
+      <a-entity 
+        id="npc-villager-2" 
+        npc-controller="type: child; walkRadius: 6; walkSpeed: 1.2" 
+        position="-4 0 7"
+        visible="false">
+      </a-entity>
+    </a-entity>
+
+
+    <!-- ============================================================
+         3D INTERACTIVE PANELS & DIALOGUE SYSTEM
+         ============================================================ -->
+    
+    <!-- Holographic Information Card (Singleton) -->
+    <a-entity id="global-info-panel" info-panel position="0 1.8 -2" visible="false"></a-entity>
+
+    <!-- AI Guide Q&A Panel -->
+    <a-entity id="guide-dialog-panel" dialog-system position="-1.5 1.5 -2.2"></a-entity>
+
+
+    <!-- ============================================================
+         AMBIENT AUDIO SOUNDSCAPE ENTITIES
+         ============================================================ -->
+    <a-entity data-ambient-sound="wind" sound="src: #audio-wind; autoplay: true; loop: true; volume: 0.4"></a-entity>
+    <a-entity data-ambient-sound="birds" sound="src: #audio-birds; autoplay: true; loop: true; volume: 0.3"></a-entity>
+    
+  </a-scene>
+
+</body>
+</html>

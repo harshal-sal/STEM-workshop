@@ -1,0 +1,418 @@
+/* ============================================================
+   ChronoScape VR — Global Styles
+   Heritage Tourism VR Experience for Meta Quest 3S
+   ============================================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --gold:          #d4a843;
+  --gold-light:    #f0c060;
+  --stone:         #8b7355;
+  --stone-dark:    #5c4a30;
+  --glow-blue:     #4fc3f7;
+  --glow-teal:     #26c6da;
+  --glass-bg:      rgba(10, 8, 4, 0.82);
+  --glass-border:  rgba(212, 168, 67, 0.35);
+  --panel-bg:      rgba(15, 12, 6, 0.88);
+  --font-main:     'Cinzel', 'Georgia', serif;
+  --font-body:     'Inter', 'Segoe UI', sans-serif;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #0a0601;
+  font-family: var(--font-body);
+}
+
+/* ─── Loading Screen ────────────────────────────────────────── */
+#loading-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at center, #1a0f02 0%, #0a0601 60%, #000 100%);
+  transition: opacity 1.2s ease, visibility 1.2s ease;
+}
+
+#loading-screen.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.loading-logo {
+  font-family: var(--font-main);
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  color: var(--gold);
+  letter-spacing: 0.15em;
+  text-align: center;
+  text-shadow: 0 0 40px rgba(212, 168, 67, 0.6), 0 0 80px rgba(212, 168, 67, 0.3);
+  animation: logoGlow 2.5s ease-in-out infinite alternate;
+}
+
+.loading-subtitle {
+  font-family: var(--font-body);
+  font-size: clamp(0.75rem, 2vw, 1rem);
+  color: rgba(212, 168, 67, 0.6);
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+  margin-top: 0.5rem;
+  text-align: center;
+}
+
+.loading-timeline {
+  display: flex;
+  gap: 1rem;
+  margin: 2.5rem 0 1.5rem;
+  align-items: center;
+}
+
+.timeline-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--gold);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.timeline-dot:nth-child(2) { animation-delay: 0.3s; }
+.timeline-dot:nth-child(3) { animation-delay: 0.6s; }
+
+.timeline-line {
+  width: 60px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: 0.5;
+}
+
+.loading-bar-container {
+  width: min(360px, 80vw);
+  height: 3px;
+  background: rgba(212, 168, 67, 0.15);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.loading-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--stone), var(--gold), var(--gold-light));
+  border-radius: 2px;
+  transition: width 0.3s ease;
+  box-shadow: 0 0 12px rgba(212, 168, 67, 0.6);
+}
+
+.loading-status {
+  font-size: 0.75rem;
+  color: rgba(212, 168, 67, 0.5);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  min-height: 1.2em;
+}
+
+/* ─── HUD Overlay ────────────────────────────────────────────── */
+#hud-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+  display: none; /* shown when scene is ready */
+}
+
+.hud-top-bar {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 50px;
+  padding: 0.5rem 1.5rem;
+  backdrop-filter: blur(12px);
+}
+
+.hud-era-label {
+  font-family: var(--font-main);
+  font-size: 0.85rem;
+  color: var(--gold);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.hud-era-badge {
+  background: rgba(212, 168, 67, 0.15);
+  border: 1px solid rgba(212, 168, 67, 0.4);
+  border-radius: 20px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.7rem;
+  color: var(--gold-light);
+  letter-spacing: 0.1em;
+}
+
+.hud-controls {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.75rem;
+  pointer-events: all;
+}
+
+.hud-btn {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  color: var(--gold);
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.hud-btn:hover {
+  background: rgba(212, 168, 67, 0.12);
+  border-color: var(--gold);
+  box-shadow: 0 0 16px rgba(212, 168, 67, 0.25);
+}
+
+.hud-btn.active {
+  background: rgba(212, 168, 67, 0.2);
+  border-color: var(--gold-light);
+  box-shadow: 0 0 20px rgba(212, 168, 67, 0.4);
+}
+
+/* ─── Intro Splash (2D fallback / desktop) ───────────────────── */
+#intro-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at center, #1a0f02 0%, #0a0601 60%, #000 100%);
+  transition: opacity 1s ease, visibility 1s ease;
+}
+
+#intro-splash.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.splash-title {
+  font-family: var(--font-main);
+  font-size: clamp(2.5rem, 8vw, 5rem);
+  color: var(--gold);
+  text-align: center;
+  letter-spacing: 0.12em;
+  text-shadow: 0 0 60px rgba(212, 168, 67, 0.5);
+  animation: logoGlow 3s ease-in-out infinite alternate;
+  line-height: 1.1;
+}
+
+.splash-tagline {
+  font-family: var(--font-body);
+  font-size: clamp(0.9rem, 2.5vw, 1.2rem);
+  color: rgba(212, 168, 67, 0.65);
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  margin-top: 0.75rem;
+  text-align: center;
+}
+
+.splash-divider {
+  width: 200px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  margin: 2rem auto;
+  opacity: 0.5;
+}
+
+.splash-description {
+  font-size: clamp(0.8rem, 2vw, 1rem);
+  color: rgba(255,255,255,0.55);
+  text-align: center;
+  max-width: 480px;
+  line-height: 1.7;
+  padding: 0 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.btn-enter-vr {
+  font-family: var(--font-main);
+  font-size: 1rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--stone-dark);
+  background: linear-gradient(135deg, var(--gold-light), var(--gold), #b8860b);
+  border: none;
+  padding: 1rem 2.5rem;
+  border-radius: 50px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.3s;
+  box-shadow: 0 0 30px rgba(212, 168, 67, 0.4), 0 4px 20px rgba(0,0,0,0.5);
+}
+
+.btn-enter-vr::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50px;
+  background: linear-gradient(135deg, var(--gold-light), transparent, var(--gold));
+  opacity: 0;
+  transition: opacity 0.3s;
+  z-index: -1;
+}
+
+.btn-enter-vr:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 0 50px rgba(212, 168, 67, 0.6), 0 8px 30px rgba(0,0,0,0.6);
+}
+
+.btn-enter-vr:hover::before { opacity: 1; }
+
+.btn-enter-vr:active { transform: translateY(0) scale(0.99); }
+
+.splash-features {
+  display: flex;
+  gap: 2rem;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.feature-chip {
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(212, 168, 67, 0.5);
+  border: 1px solid rgba(212, 168, 67, 0.2);
+  border-radius: 20px;
+  padding: 0.3rem 0.8rem;
+}
+
+/* ─── Era Switcher Panel ─────────────────────────────────────── */
+#era-switcher {
+  position: fixed;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 200;
+  display: none;
+  flex-direction: column;
+  gap: 0.5rem;
+  pointer-events: all;
+}
+
+.era-btn {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  color: var(--gold);
+  font-family: var(--font-body);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.6rem 0.9rem;
+  border-radius: 8px;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  transition: all 0.25s ease;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.era-btn:hover {
+  background: rgba(212, 168, 67, 0.12);
+  border-color: var(--gold);
+  box-shadow: 0 0 16px rgba(212, 168, 67, 0.3);
+  transform: translateX(-4px);
+}
+
+.era-btn.active {
+  background: rgba(212, 168, 67, 0.22);
+  border-color: var(--gold-light);
+  color: var(--gold-light);
+  box-shadow: 0 0 24px rgba(212, 168, 67, 0.5);
+}
+
+/* ─── Notification Toast ─────────────────────────────────────── */
+#notification-toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  z-index: 300;
+  background: var(--panel-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  padding: 0.8rem 1.5rem;
+  color: var(--gold-light);
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  opacity: 0;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  pointer-events: none;
+  backdrop-filter: blur(14px);
+  max-width: 360px;
+  text-align: center;
+}
+
+#notification-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ─── Keyframe Animations ────────────────────────────────────── */
+@keyframes logoGlow {
+  from { text-shadow: 0 0 20px rgba(212,168,67,0.4), 0 0 50px rgba(212,168,67,0.2); }
+  to   { text-shadow: 0 0 40px rgba(212,168,67,0.8), 0 0 90px rgba(212,168,67,0.4), 0 0 140px rgba(212,168,67,0.15); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50%       { opacity: 1;   transform: scale(1.2); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+/* ─── A-Frame canvas override ────────────────────────────────── */
+a-scene canvas {
+  outline: none;
+}
+
+/* ─── Responsive tweaks ──────────────────────────────────────── */
+@media (max-width: 600px) {
+  .splash-features { gap: 0.75rem; }
+  .hud-controls    { gap: 0.4rem; }
+  .hud-btn         { font-size: 0.6rem; padding: 0.4rem 0.7rem; }
+}
