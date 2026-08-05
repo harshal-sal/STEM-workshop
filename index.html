@@ -205,10 +205,10 @@
     <!-- Floating "Before & After" View Selector -->
     <div id="view-panel">
         <button class="mode-btn active" id="btn-before" onclick="setMode('before')">
-            🏛️ Before (1594 3D Reconstruction)
+            ✨ Before (Pristine 1594 3D)
         </button>
         <button class="mode-btn" id="btn-after" onclick="setMode('after')">
-            🧱 After (Modern 3D Laterite)
+            🧱 After (Broken Laterite 3D)
         </button>
         <button class="mode-btn" id="btn-split" onclick="setMode('side-by-side')">
             🔄 Side-by-Side 3D
@@ -229,22 +229,20 @@
         perf-hud
     >
         <a-assets>
-            <img id="img-reconstructed" src="./assets/images/basilica_reconstructed.jpg">
-            <img id="img-ruin" src="./assets/images/basilica_ruin.jpg">
             <img id="img-guide" src="./assets/images/guide_portrait.jpg">
             <img id="img-ground" src="./assets/images/courtyard_ground.jpg">
         </a-assets>
 
         <!-- Dynamic Lighting Setup -->
-        <a-entity light="type: ambient; color: #E2E8F0; intensity: 0.9"></a-entity>
-        <a-entity light="type: directional; color: #ffebc2; intensity: 1.5; castShadow: true" position="5 8 4"></a-entity>
+        <a-entity light="type: ambient; color: #E2E8F0; intensity: 0.95"></a-entity>
+        <a-entity light="type: directional; color: #fff1d6; intensity: 1.6; castShadow: true" position="6 10 5"></a-entity>
 
         <!-- Clean Sky Atmosphere (No City Image) -->
-        <a-sky color="#0c1527"></a-sky>
+        <a-sky color="#0b1329"></a-sky>
 
         <!-- Camera Rig with Orbit Controls for 360-degree 3D View -->
         <a-entity id="camera-rig" position="0 0 0">
-            <a-entity id="main-camera" camera look-controls orbit-controls="target: 0 1.2 0; initialPosition: 0 2.4 5.2; enableDamping: true; dampingFactor: 0.08"></a-entity>
+            <a-entity id="main-camera" camera look-controls orbit-controls="target: 0 1.2 0; initialPosition: 0 2.4 5.5; enableDamping: true; dampingFactor: 0.08"></a-entity>
             
             <!-- Quest Controllers & Hand Tracking -->
             <a-entity id="right-controller" controller-input="hand: right"></a-entity>
@@ -257,16 +255,16 @@
         <a-entity id="site-container" site-anchor position="0 0 0">
             
             <!-- Mode Title Tag -->
-            <a-text id="mode-text" value="BEFORE: 1594 Golden Age Volumetric 3D" position="0 3.8 0" align="center" scale="0.85 0.85 0.85" color="#38bdf8"></a-text>
+            <a-text id="mode-text" value="BEFORE: 1594 Pristine Golden Baroque 3D" position="0 3.8 0" align="center" scale="0.85 0.85 0.85" color="#38bdf8"></a-text>
 
-            <!-- 1. FULL VOLUMETRIC 3D BEFORE MODEL (1594 Golden Age) -->
+            <!-- 1. PURE 3D VOLUMETRIC BEFORE MODEL (Pristine 1594 Restoration) -->
             <a-entity id="model-before" basilica-builder="type: reconstructed" position="0 0 0" visible="true"></a-entity>
 
-            <!-- 2. FULL VOLUMETRIC 3D AFTER MODEL (Modern Laterite Ruin) -->
+            <!-- 2. PURE 3D VOLUMETRIC AFTER MODEL (Old & Broken Laterite Ruin) -->
             <a-entity id="model-after" basilica-builder="type: ruin" position="0 0 0" visible="false"></a-entity>
 
-            <!-- 3D Paved Stone Courtyard Ground Plane -->
-            <a-plane position="0 -0.05 0" rotation="-90 0 0" width="30" height="30" src="#img-ground" material="repeat: 8 8; roughness: 0.9" shadow="receive: true"></a-plane>
+            <!-- 3D Paved Stone Courtyard Ground Base -->
+            <a-plane position="0 -0.05 0" rotation="-90 0 0" width="36" height="36" src="#img-ground" material="repeat: 9 9; roughness: 0.9" shadow="receive: true"></a-plane>
 
             <!-- 3D Hotspot 1: St. Xavier Tomb -->
             <a-entity position="1.1 1.4 1.4" class="hotspot clickable" onclick="showHotspotModal('Tomb of St. Francis Xavier', 'The mausoleum inside the Basilica holds the sacred mortal remains of St. Francis Xavier, housed in an intricate silver casket crafted by Florentine artist Foggini in 1698.')">
@@ -276,10 +274,10 @@
             </a-entity>
 
             <!-- 3D Hotspot 2: Twin Bell Towers -->
-            <a-entity position="-1.7 2.4 0.9" class="hotspot clickable" onclick="showHotspotModal('Volumetric 3D Twin Towers', 'The twin bell towers flank the main nave, constructed with local red laterite stone and white lime mortar during the Portuguese colonial era.')">
+            <a-entity position="-1.7 2.4 0.9" class="hotspot clickable" onclick="showHotspotModal('Twin Bell Towers', 'The twin bell towers flank the main nave, constructed with local red laterite stone and white lime mortar during the Portuguese colonial era.')">
                 <a-sphere radius="0.09" color="#f59e0b" material="emissive: #f59e0b; emissiveIntensity: 0.6"></a-sphere>
                 <a-ring rotation="-90 0 0" radius-inner="0.11" radius-outer="0.14" color="#fbbf24" material="emissive: #fbbf24; emissiveIntensity: 0.8"></a-ring>
-                <a-text value="Volumetric 3D Twin Towers" position="0 0.22 0" align="center" scale="0.38 0.38 0.38" color="#fbbf24"></a-text>
+                <a-text value="Twin Bell Towers" position="0 0.22 0" align="center" scale="0.38 0.38 0.38" color="#fbbf24"></a-text>
             </a-entity>
 
             <!-- Holographic Avatar Guide Entity (Father Domingos) -->
@@ -301,14 +299,14 @@
                 beforeModel.setAttribute('visible', 'true');
                 beforeModel.setAttribute('position', '0 0 0');
                 afterModel.setAttribute('visible', 'false');
-                modeText.setAttribute('value', 'BEFORE: 1594 Golden Age Volumetric 3D');
+                modeText.setAttribute('value', 'BEFORE: 1594 Pristine Golden Baroque 3D');
                 modeText.setAttribute('color', '#38bdf8');
             } else if (mode === 'after') {
                 document.getElementById('btn-after').classList.add('active');
                 beforeModel.setAttribute('visible', 'false');
                 afterModel.setAttribute('visible', 'true');
                 afterModel.setAttribute('position', '0 0 0');
-                modeText.setAttribute('value', 'AFTER: Modern Volumetric 3D Laterite');
+                modeText.setAttribute('value', 'AFTER: Old & Broken Laterite Ruin 3D');
                 modeText.setAttribute('color', '#f97316');
             } else if (mode === 'side-by-side') {
                 document.getElementById('btn-split').classList.add('active');
