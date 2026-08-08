@@ -1,4 +1,4 @@
-# Chronoscope Heritage AR (Goa Heritage Site Reconstruction)
+kal AI- where time stops
 
 A production-shaped WebXR prototype for the **Meta Quest 3S** built with **A-Frame** and plain HTML/JS.
 
